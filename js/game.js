@@ -7,7 +7,8 @@ var game = (function() {
     actors = [],
         Actor,
         Box,
-        Ball,
+        ball,
+        geezer,
         room = [],
         b2Vec2 = Box2D.Common.Math.b2Vec2,
         b2AABB = Box2D.Collision.b2AABB,
@@ -69,6 +70,15 @@ var game = (function() {
                 y: game.height / 2
             }
         }));
+        bench = new Box({
+           type: 'static',
+            width: 110,
+            height: 80,
+            position: {
+                x:  790,
+                y: 520
+            }
+        })
 
 
     }
@@ -93,12 +103,12 @@ var game = (function() {
         game.world = new b2World(new b2Vec2(0, 9.8), true);
         createRoom();
         ball = new Ball({
-            radius: 16,
             position: {
                 x: 200,
                 y: game.height - 30
             }
         });
+        geezer = new game.objects.Geezer();
         var listener = new Box2D.Dynamics.b2ContactListener;
         listener.BeginContact = function(contact) {
             // console.log(contact.GetFixtureA());
@@ -174,6 +184,7 @@ var game = (function() {
             }
         }
         ball.update();
+        geezer.update();
         game.world.Step(1 / 60, 10, 10);
         game.world.m_debugDraw.m_sprite.graphics.clear();
         game.world.DrawDebugData();

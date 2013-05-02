@@ -48,6 +48,7 @@ game.objects = (function() {
         function createBody() {
             var bodyDef = new b2BodyDef(),
                 fixDef = new b2FixtureDef(),
+                radius = 16,
                 body;
             options.fix = options.fix || {};
             fixDef.density = options.fix.density || defaultFixture.density;
@@ -58,7 +59,7 @@ game.objects = (function() {
             options.position.x = options.position.x / game.scale || Math.random() + 0.1;
             options.position.y = options.position.y / game.scale || Math.random() + 0.1;
             bodyDef.position = options.position;
-            fixDef.shape = new b2CircleShape(options.radius / game.scale || Math.random() + 0.1);
+            fixDef.shape = new b2CircleShape(radius / game.scale || Math.random() + 0.1);
             body = game.world.CreateBody(bodyDef);
             body.CreateFixture(fixDef);
             return body;
@@ -77,8 +78,8 @@ game.objects = (function() {
                 animations: {
                     bounce: {
                         frames: [0, 1, 2, 3, 2, 1, 0],
-                        next:"steady",
-                        frequency : 2
+                        next: "steady",
+                        frequency: 2
                     },
                     fly: [1],
                     steady: [0]
@@ -100,6 +101,92 @@ game.objects = (function() {
         game.objects.Actor.call(this, body, skin);
 
     };
+    that.Geezer = function() {
+        function createBody() {
+            var bodyDef = new b2BodyDef(),
+                fixDef = new b2FixtureDef(),
+                points = [{
+                    x: 100,
+                    y: 130
+                }, {
+                    x: 150,
+                    y: 90
+                }, {
+                    x: 235,
+                    y: 90
+                },{
+                    x: 250,
+                    y: 120
+                },
+                {
+                    x: 230,
+                    y: 250
+                },
+                {
+                    x: 120,
+                    y: 250
+                },
+                {
+                    x:110,
+                    y:240
+                }
+                ],
+                i,
+                vec,
+                body;
+            fixDef.density =  defaultFixture.density;
+            fixDef.friction = defaultFixture.friction;
+            fixDef.restitution = defaultFixture.restitution;
+            bodyDef.type = b2Body.b2_staticBody;
+            bodyDef.position = {
+                x: 500 / game.scale,
+                y : 190 / game.scale
+            };
+
+            fixDef.shape = new b2PolygonShape();
+
+            for (i = 0; i < points.length; i += 1) {
+                vec = new b2Vec2();
+                vec.Set(points[i].x / game.scale, points[i].y / game.scale);
+                points[i] = vec;
+            }
+
+            fixDef.shape.SetAsArray(points, points.length);
+            body = game.world.CreateBody(bodyDef);
+            body.CreateFixture(fixDef);
+            return body;
+        }
+
+        function createSkin() {
+            var data = {
+                images: ["img/geezer.png"],
+                frames: {
+                    width: 180,
+                    height: 184,
+                    count: 4,
+                    regX: -110,
+                    regY: -100
+                },
+                animations: {
+                    "sit":[0]
+                }
+            };
+            var spriteSheet = new createjs.SpriteSheet(data);
+            var skin = new createjs.BitmapAnimation(spriteSheet);
+            console.log(spriteSheet);
+            skin.gotoAndPlay("sit");
+            skin.x = Math.round(Math.random() * 500);
+            skin.y = -30;
+            skin.regX = 25; // important to set origin point to center of your bitmap
+            skin.regY = 25;
+            game.stage.addChild(skin);
+            return skin;
+        }
+        var body = createBody();
+        var skin = createSkin();
+        game.objects.Actor.call(this, body, skin);
+    };
+
     that.Actor = function(body, skin) {
         this.body = body;
         this.skin = skin;
@@ -107,17 +194,17 @@ game.objects = (function() {
             var x = this.body.m_linearVelocity.x,
                 y = this.body.m_linearVelocity.y,
                 limit = 6;
-            
+
             this.skin.x = this.body.GetWorldCenter().x * game.scale;
             this.skin.y = this.body.GetWorldCenter().y * game.scale;
 
-            if (skin.currentAnimation === "bounce" ) {
+            if (skin.currentAnimation === "bounce") {
                 console.log("bounce");
                 return;
             }
             if (x > limit || y > limit) {
                 // find the velocity raptor... i mean vector
-                var angle = Math.atan(Math.abs(y)/Math.abs(x)) * (180 / Math.PI);
+                var angle = Math.atan(Math.abs(y) / Math.abs(x)) * (180 / Math.PI);
                 if (y > 0 && x < 0) {
                     angle = 180 - angle;
                 } else if (y < 0 && x < 0) {
